@@ -32,7 +32,7 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Generate and send briefing
-        run: python src/main.py
+        run: python -m src.main
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           GMAIL_TOKEN_JSON: ${{ secrets.GMAIL_TOKEN_JSON }}
