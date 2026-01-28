@@ -45,7 +45,7 @@ class BriefingGenerator:
         # Extract data
         top_stories = processed_data.get("top_stories", [])
         secondary_stories = processed_data.get("secondary_stories", [])
-        other_count = processed_data.get("other_stories_count", 0)
+        other_stories = processed_data.get("other_stories", [])
         summary = processed_data.get("deduplication_summary", {})
 
         # Build subject line
@@ -62,9 +62,9 @@ class BriefingGenerator:
             executive_summary=exec_summary,
             top_stories=top_stories,
             secondary_stories=secondary_stories,
-            other_stories_count=other_count,
+            other_stories=other_stories,
             newsletters_processed=newsletters_processed,
-            total_stories=summary.get("deduplicated_story_count", len(top_stories) + len(secondary_stories)),
+            total_stories=summary.get("deduplicated_story_count", len(top_stories) + len(secondary_stories) + len(other_stories)),
             original_count=summary.get("original_story_count", 0),
         )
 

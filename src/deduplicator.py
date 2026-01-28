@@ -58,7 +58,7 @@ class Deduplicator:
             print(f"  Original: {len(raw_stories)} stories")
             print(f"  Top stories: {len(result.get('top_stories', []))}")
             print(f"  Secondary stories: {len(result.get('secondary_stories', []))}")
-            print(f"  Other stories: {result.get('other_stories_count', 0)}")
+            print(f"  Other stories: {len(result.get('other_stories', []))}")
 
             return result
 
@@ -109,7 +109,7 @@ You will receive {story_count} raw news stories extracted from newsletters. You 
 3. CATEGORIZE:
    - top_stories: Top {top_count} most significant stories with why_it_matters
    - secondary_stories: Next 5-10 important stories with why_it_matters
-   - other_stories: Everything else (just count)
+   - other_stories: Everything else (include headline only)
 
 4. For each top/secondary story, include "why_it_matters" - one sentence explaining strategic significance
 
@@ -129,7 +129,9 @@ OUTPUT FORMAT (JSON only):
     }}
   ],
   "secondary_stories": [ /* same format */ ],
-  "other_stories_count": 0,
+  "other_stories": [
+    {{ "headline": "Headline for lower-priority story" }}
+  ],
   "deduplication_summary": {{
     "original_story_count": {story_count},
     "deduplicated_story_count": 0,
@@ -173,7 +175,7 @@ Please deduplicate, rank, and categorize these stories. Return your response as 
         return {
             "top_stories": [],
             "secondary_stories": [],
-            "other_stories_count": 0,
+            "other_stories": [],
             "deduplication_summary": {
                 "original_story_count": 0,
                 "deduplicated_story_count": 0,

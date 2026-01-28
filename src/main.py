@@ -112,7 +112,8 @@ def run_pipeline() -> Dict[str, Any]:
 
     for i, email in enumerate(email_list, 1):
         try:
-            subject_preview = email["subject"][:40]
+            # Safely encode subject for Windows console (replace emojis with ?)
+            subject_preview = email["subject"][:40].encode("ascii", "replace").decode("ascii")
             print(f"  [{i}/{len(email_list)}] Fetching: {subject_preview}...")
             email_data = gmail_client.get_email_text(email["id"])
             newsletters.append(email_data)

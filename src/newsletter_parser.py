@@ -34,9 +34,11 @@ class NewsletterParser:
         all_stories = []
 
         for i, newsletter in enumerate(newsletters, 1):
-            subject_preview = newsletter["subject"][:50]
+            # Safely encode for Windows console
+            subject_preview = newsletter["subject"][:50].encode("ascii", "replace").decode("ascii")
+            from_preview = newsletter["from"].encode("ascii", "replace").decode("ascii")
             print(f"\n[{i}/{len(newsletters)}] Extracting stories from: {subject_preview}...")
-            print(f"  From: {newsletter['from']}")
+            print(f"  From: {from_preview}")
             print(f"  Text length: {len(newsletter.get('text', ''))} characters")
 
             # Skip if no meaningful content

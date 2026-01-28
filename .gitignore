@@ -40,8 +40,16 @@ env/
 
 # Gmail credentials
 credentials.json
+credentials_*.json
 token.pickle
 .gmail_credentials/
+
+# Debug/test scripts
+debug_*.py
+test_gmail_auth.py
+
+# Claude Code
+.claude/
 
 # Logs
 logs/

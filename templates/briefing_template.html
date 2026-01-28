@@ -325,11 +325,14 @@
             </div>
             {% endif %}
 
-            {% if other_stories_count > 0 %}
+            {% if other_stories %}
             <div class="section">
-                <p style="color: #6b7280; font-size: 14px;">
-                    + {{ other_stories_count }} more stories not shown
-                </p>
+                <h2 class="section-title">Also Noted</h2>
+                <ul style="margin: 0; padding: 0 0 0 20px; color: #4b5563; font-size: 14px;">
+                    {% for story in other_stories %}
+                    <li style="margin-bottom: 6px;">{{ story.headline }}</li>
+                    {% endfor %}
+                </ul>
             </div>
             {% endif %}
         </div>
