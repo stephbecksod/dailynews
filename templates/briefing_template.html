@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI News Briefing - {{ date }}</title>
+    <style>
+        /* Reset and base styles */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            font-size: 16px;
+            line-height: 1.6;
+            color: #1a1a1a;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            max-width: 680px;
+            margin: 0 auto;
+            background-color: #ffffff;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #1e3a5f 0%, #2d5a87 100%);
+            color: #ffffff;
+            padding: 32px 24px;
+            text-align: center;
+        }
+
+        .header h1 {
+            margin: 0 0 8px 0;
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .header .date {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        /* Content sections */
+        .content {
+            padding: 0 24px;
+        }
+
+        .section {
+            padding: 24px 0;
+            border-bottom: 1px solid #e5e5e5;
+        }
+
+        .section:last-child {
+            border-bottom: none;
+        }
+
+        .section-title {
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #6b7280;
+            margin: 0 0 16px 0;
+        }
+
+        /* Executive Summary */
+        .exec-summary {
+            background-color: #f8fafc;
+            border-left: 4px solid #2d5a87;
+            padding: 16px 20px;
+            margin: 0;
+        }
+
+        .exec-summary ul {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        .exec-summary li {
+            padding: 8px 0;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .exec-summary li::before {
+            content: "→";
+            position: absolute;
+            left: 0;
+            color: #2d5a87;
+            font-weight: bold;
+        }
+
+        /* Story cards */
+        .story {
+            margin-bottom: 24px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .story:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+
+        .story-number {
+            display: inline-block;
+            width: 28px;
+            height: 28px;
+            background-color: #2d5a87;
+            color: #ffffff;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 28px;
+            font-size: 14px;
+            font-weight: 600;
+            margin-right: 12px;
+            vertical-align: middle;
+        }
+
+        .story-headline {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin: 0 0 12px 0;
+            line-height: 1.4;
+        }
+
+        .story-summary {
+            color: #374151;
+            margin: 0 0 12px 0;
+        }
+
+        .story-why {
+            background-color: #fef3c7;
+            border-radius: 6px;
+            padding: 12px 16px;
+            margin: 12px 0;
+            font-size: 15px;
+        }
+
+        .story-why strong {
+            color: #92400e;
+        }
+
+        .story-meta {
+            font-size: 13px;
+            color: #6b7280;
+        }
+
+        .story-meta .sources {
+            display: inline-block;
+            margin-right: 16px;
+        }
+
+        .story-meta .mentions {
+            display: inline-block;
+            background-color: #e5e7eb;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-weight: 500;
+        }
+
+        /* Secondary stories */
+        .secondary-story {
+            padding: 16px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .secondary-story:last-child {
+            border-bottom: none;
+        }
+
+        .secondary-headline {
+            font-size: 17px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin: 0 0 8px 0;
+        }
+
+        .secondary-summary {
+            font-size: 15px;
+            color: #4b5563;
+            margin: 0 0 8px 0;
+        }
+
+        .secondary-meta {
+            font-size: 12px;
+            color: #9ca3af;
+        }
+
+        /* Footer */
+        .footer {
+            background-color: #f8fafc;
+            padding: 24px;
+            text-align: center;
+            font-size: 13px;
+            color: #6b7280;
+        }
+
+        .footer .stats {
+            margin-bottom: 16px;
+        }
+
+        .footer .sources-list {
+            font-style: italic;
+        }
+
+        /* Launch badge */
+        .launch-badge {
+            display: inline-block;
+            background-color: #10b981;
+            color: #ffffff;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            padding: 2px 8px;
+            border-radius: 4px;
+            margin-left: 8px;
+            vertical-align: middle;
+        }
+
+        /* Links */
+        a {
+            color: #2563eb;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        /* Mobile responsive */
+        @media only screen and (max-width: 600px) {
+            .header {
+                padding: 24px 16px;
+            }
+
+            .header h1 {
+                font-size: 24px;
+            }
+
+            .content {
+                padding: 0 16px;
+            }
+
+            .story-headline {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>AI News Briefing</h1>
+            <div class="date">{{ weekday }}, {{ date }}</div>
+        </div>
+
+        <div class="content">
+            <!-- Executive Summary -->
+            <div class="section">
+                <h2 class="section-title">TL;DR</h2>
+                <div class="exec-summary">
+                    <ul>
+                        {% for bullet in executive_summary %}
+                        <li>{{ bullet }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Top Stories -->
+            {% if top_stories %}
+            <div class="section">
+                <h2 class="section-title">Top Stories</h2>
+                {% for story in top_stories %}
+                <div class="story">
+                    <h3 class="story-headline">
+                        <span class="story-number">{{ loop.index }}</span>
+                        {{ story.headline }}
+                        {% if story.is_launch %}<span class="launch-badge">Launch</span>{% endif %}
+                    </h3>
+                    <p class="story-summary">{{ story.summary }}</p>
+                    {% if story.why_it_matters %}
+                    <div class="story-why">
+                        <strong>Why it matters:</strong> {{ story.why_it_matters }}
+                    </div>
+                    {% endif %}
+                    <div class="story-meta">
+                        {% if story.sources %}
+                        <span class="sources">Sources: {{ story.sources | join(', ') }}</span>
+                        {% endif %}
+                        {% if story.mention_count and story.mention_count > 1 %}
+                        <span class="mentions">{{ story.mention_count }} mentions</span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Secondary Stories -->
+            {% if secondary_stories %}
+            <div class="section">
+                <h2 class="section-title">More Stories</h2>
+                {% for story in secondary_stories %}
+                <div class="secondary-story">
+                    <h4 class="secondary-headline">
+                        {{ story.headline }}
+                        {% if story.is_launch %}<span class="launch-badge">Launch</span>{% endif %}
+                    </h4>
+                    <p class="secondary-summary">{{ story.summary }}</p>
+                    <div class="secondary-meta">
+                        {% if story.sources %}
+                        {{ story.sources | join(', ') }}
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {% if other_stories_count > 0 %}
+            <div class="section">
+                <p style="color: #6b7280; font-size: 14px;">
+                    + {{ other_stories_count }} more stories not shown
+                </p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <div class="stats">
+                {{ total_stories }} unique stories from {{ original_count }} raw extractions
+            </div>
+            <div class="sources-list">
+                Sources: {{ newsletters_processed | join(' • ') }}
+            </div>
+        </div>
+    </div>
+</body>
+</html>

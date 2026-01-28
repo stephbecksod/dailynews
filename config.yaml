@@ -1,0 +1,53 @@
+# Daily AI News Briefing Configuration
+
+# Newsletter Sources
+newsletter_sources:
+  - email: superhuman@mail.joinsuperhuman.ai
+    name: Superhuman AI
+  - email: ai.plus@axios.com
+    name: Axios AI+
+  - email: newsletters@techcrunch.com
+    name: TechCrunch
+  - email: thatstartupguy@mail.beehiiv.com
+    name: That Startup Guy
+  - email: news@daily.therundown.ai
+    name: The Rundown AI
+
+# Briefing settings
+briefing:
+  recipient: stephanie.soderborg@gmail.com
+  subject_prefix: "[AI Briefing]"
+  format: rich_html
+  include_all_stories: true
+  top_stories_count: 5
+
+# Claude API settings
+claude:
+  model: claude-sonnet-4-5-20250929
+  max_tokens: 8000
+  temperature: 0.3
+
+# Major AI companies (for ranking/context)
+major_ai_companies:
+  - OpenAI
+  - Anthropic
+  - Google
+  - Meta
+  - xAI
+  - Amazon
+  - Microsoft
+  - Apple
+  - Nvidia
+  - DeepMind
+
+# Schedule settings (for reference - actual schedule in GitHub Actions)
+schedule:
+  time: "08:10"
+  timezone: "America/Los_Angeles"
+  weekdays_only: true
+
+# Retry settings
+retry:
+  max_attempts: 3
+  base_delay_seconds: 5
+  max_delay_seconds: 60
