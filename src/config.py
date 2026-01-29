@@ -117,6 +117,17 @@ class Config:
         """Get Gmail token JSON (GitHub Actions)."""
         return os.environ.get("GMAIL_TOKEN_JSON")
 
+    # ElevenLabs settings
+    @property
+    def elevenlabs_api_key(self) -> Optional[str]:
+        """Get ElevenLabs API key for audio generation."""
+        return os.environ.get("ELEVENLABS_API_KEY")
+
+    @property
+    def audio_enabled(self) -> bool:
+        """Check if audio generation is enabled (API key is set)."""
+        return bool(self.elevenlabs_api_key)
+
     # Major AI companies (for context)
     @property
     def major_ai_companies(self) -> List[str]:

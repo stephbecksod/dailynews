@@ -6,6 +6,9 @@ import os
 import pickle
 import re
 from datetime import datetime, timedelta
+from email import encoders
+from email.mime.audio import MIMEAudio
+from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from pathlib import Path
@@ -337,6 +340,7 @@ class GmailClient:
         subject: str,
         html_body: str,
         text_body: Optional[str] = None,
+        attachment_path: Optional[Path] = None,
     ) -> Dict:
         """
         Send an email via Gmail API.
@@ -346,6 +350,7 @@ class GmailClient:
             subject: Email subject
             html_body: HTML content of the email
             text_body: Optional plain text alternative
+            attachment_path: Optional path to file to attach (e.g., MP3)
 
         Returns:
             Sent message metadata
@@ -353,19 +358,48 @@ class GmailClient:
         if not self.service:
             raise RuntimeError("Not authenticated. Call authenticate() first.")
 
-        # Create message
-        message = MIMEMultipart("alternative")
+        # Use mixed multipart if we have an attachment, otherwise alternative
+        if attachment_path:
+            message = MIMEMultipart("mixed")
+            # Create the body as an alternative part
+            body_part = MIMEMultipart("alternative")
+            if text_body:
+                body_part.attach(MIMEText(text_body, "plain"))
+            body_part.attach(MIMEText(html_body, "html"))
+            message.attach(body_part)
+
+            # Add the attachment
+            attachment_path = Path(attachment_path)
+            if attachment_path.suffix.lower() == ".mp3":
+                with open(attachment_path, "rb") as f:
+                    audio_part = MIMEAudio(f.read(), _subtype="mpeg")
+                audio_part.add_header(
+                    "Content-Disposition",
+                    "attachment",
+                    filename=attachment_path.name,
+                )
+                message.attach(audio_part)
+            else:
+                # Generic attachment
+                with open(attachment_path, "rb") as f:
+                    part = MIMEBase("application", "octet-stream")
+                    part.set_payload(f.read())
+                encoders.encode_base64(part)
+                part.add_header(
+                    "Content-Disposition",
+                    "attachment",
+                    filename=attachment_path.name,
+                )
+                message.attach(part)
+        else:
+            # Simple alternative message without attachment
+            message = MIMEMultipart("alternative")
+            if text_body:
+                message.attach(MIMEText(text_body, "plain"))
+            message.attach(MIMEText(html_body, "html"))
+
         message["to"] = to
         message["subject"] = subject
-
-        # Add plain text part if provided
-        if text_body:
-            text_part = MIMEText(text_body, "plain")
-            message.attach(text_part)
-
-        # Add HTML part
-        html_part = MIMEText(html_body, "html")
-        message.attach(html_part)
 
         # Encode and send
         raw = base64.urlsafe_b64encode(message.as_bytes()).decode()

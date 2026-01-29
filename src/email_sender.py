@@ -1,6 +1,7 @@
 """Email sender for briefings using Gmail API."""
 
-from typing import Dict, Optional
+from pathlib import Path
+from typing import Dict, Optional, Union
 
 from .config import get_config
 from .gmail_client import GmailClient
@@ -23,6 +24,7 @@ class EmailSender:
         self,
         briefing: Dict[str, str],
         recipient: Optional[str] = None,
+        audio_path: Optional[Union[str, Path]] = None,
     ) -> Dict:
         """
         Send the briefing email.
@@ -30,6 +32,7 @@ class EmailSender:
         Args:
             briefing: Dictionary with 'html', 'text', and 'subject' keys
             recipient: Optional override for recipient email
+            audio_path: Optional path to MP3 audio file to attach
 
         Returns:
             Sent message metadata from Gmail API
@@ -43,12 +46,15 @@ class EmailSender:
             raise ValueError("No recipient email configured")
 
         print(f"\nSending briefing to {to_email}...")
+        if audio_path:
+            print(f"  Attaching audio: {audio_path}")
 
         result = self.gmail.send_email(
             to=to_email,
             subject=briefing["subject"],
             html_body=briefing["html"],
             text_body=briefing.get("text"),
+            attachment_path=audio_path,
         )
 
         return result

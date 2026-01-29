@@ -3,13 +3,14 @@
 Daily AI News Briefing - Main Orchestrator
 
 Fetches newsletters from Gmail, extracts stories using Claude,
-deduplicates and ranks, then sends a formatted briefing email.
+deduplicates and ranks, generates audio podcast, then sends a formatted briefing email.
 """
 
 import sys
 import time
 import traceback
 from datetime import datetime
+from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from .config import get_config
@@ -73,12 +74,15 @@ def run_pipeline() -> Dict[str, Any]:
     generator = BriefingGenerator()
     sender = EmailSender(gmail_client)
 
+    # Determine total steps (6 if audio enabled, 5 otherwise)
+    total_steps = 6 if config.audio_enabled else 5
+
     # Step 1: Authenticate with Gmail
-    print("\n[1/5] Authenticating with Gmail...")
+    print(f"\n[1/{total_steps}] Authenticating with Gmail...")
     gmail_client.authenticate()
 
     # Step 2: Fetch newsletters
-    print("\n[2/5] Fetching newsletters from the past day...")
+    print(f"\n[2/{total_steps}] Fetching newsletters from the past day...")
     newsletter_emails = config.newsletter_emails
 
     def fetch_newsletters():
@@ -106,7 +110,7 @@ def run_pipeline() -> Dict[str, Any]:
         }
 
     # Fetch full text for each newsletter
-    print(f"\n[2/5] Fetching text from {len(email_list)} newsletters...")
+    print(f"\n[2/{total_steps}] Fetching text from {len(email_list)} newsletters...")
     newsletters = []
     newsletters_processed = []
 
@@ -135,7 +139,7 @@ def run_pipeline() -> Dict[str, Any]:
         }
 
     # Step 3: Extract stories
-    print("\n[3/5] Extracting stories with Claude API...")
+    print(f"\n[3/{total_steps}] Extracting stories with Claude API...")
 
     def extract_stories():
         return parser.extract_stories(newsletters)
@@ -159,7 +163,7 @@ def run_pipeline() -> Dict[str, Any]:
         }
 
     # Step 4: Deduplicate and rank
-    print("\n[4/5] Deduplicating and ranking stories...")
+    print(f"\n[4/{total_steps}] Deduplicating and ranking stories...")
 
     def deduplicate():
         return deduplicator.process(raw_stories)
@@ -170,23 +174,65 @@ def run_pipeline() -> Dict[str, Any]:
         base_delay=config.retry_base_delay,
     )
 
-    # Step 5: Generate and send briefing
-    print("\n[5/5] Generating and sending briefing...")
+    # Step 5: Generate audio (if enabled)
+    audio_path = None
+    if config.audio_enabled:
+        print(f"\n[5/{total_steps}] Generating audio podcast...")
+        try:
+            from .audio import ScriptGenerator, TTSClient
+
+            script_gen = ScriptGenerator()
+            tts_client = TTSClient()
+
+            # Generate script
+            script = script_gen.generate(
+                processed_data=processed_data,
+                newsletters_processed=newsletters_processed,
+            )
+
+            # Estimate duration
+            duration_mins = tts_client.estimate_duration(script)
+            char_count = tts_client.get_character_count(script)
+            print(f"  Script: {char_count} characters, ~{duration_mins:.1f} min")
+
+            # Generate audio
+            audio_path = Path("briefing_audio.mp3")
+
+            def generate_audio():
+                return tts_client.generate_audio(script, audio_path)
+
+            audio_path = retry_with_backoff(
+                generate_audio,
+                max_attempts=config.max_retry_attempts,
+                base_delay=config.retry_base_delay,
+            )
+        except Exception as e:
+            print(f"  [WARNING] Audio generation failed: {e}")
+            print("  [WARNING] Continuing without audio...")
+            audio_path = None
+
+    # Step 6: Generate and send briefing
+    final_step = total_steps
+    print(f"\n[{final_step}/{total_steps}] Generating and sending briefing...")
 
     briefing = generator.generate(
         processed_data=processed_data,
         newsletters_processed=newsletters_processed,
     )
 
-    # Send the briefing
+    # Send the briefing (with audio if available)
     def send_email():
-        return sender.send_briefing(briefing)
+        return sender.send_briefing(briefing, audio_path=audio_path)
 
     sent_result = retry_with_backoff(
         send_email,
         max_attempts=config.max_retry_attempts,
         base_delay=config.retry_base_delay,
     )
+
+    # Clean up audio file
+    if audio_path and audio_path.exists():
+        audio_path.unlink()
 
     # Calculate stats
     end_time = datetime.now()
@@ -202,6 +248,7 @@ def run_pipeline() -> Dict[str, Any]:
     print(f"Newsletters processed: {len(newsletters)}")
     print(f"Raw stories extracted: {len(raw_stories)}")
     print(f"Unique stories after dedup: {total_stories}")
+    print(f"Audio included: {'Yes' if audio_path else 'No'}")
     print(f"Duration: {duration:.1f} seconds")
     print(f"Email sent to: {config.recipient_email}")
     print("=" * 60)
@@ -212,6 +259,7 @@ def run_pipeline() -> Dict[str, Any]:
         "newsletters_processed": len(newsletters),
         "stories_extracted": len(raw_stories),
         "stories_after_dedup": total_stories,
+        "audio_included": bool(audio_path),
         "briefing_sent": True,
         "duration_seconds": duration,
         "message_id": sent_result.get("id"),
