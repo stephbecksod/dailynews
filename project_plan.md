@@ -3,6 +3,11 @@
 ## Overview
 An automated system that creates daily AI news briefings from 5 newsletters, with future phases for audio podcasts and a multi-user web application.
 
+## Status
+- **Phase 1: Daily Email Briefing** - COMPLETE
+- **Phase 2: Audio Podcast** - COMPLETE
+- **Phase 3: Web Application** - Not started
+
 ## Existing Asset: ai_newsletter_curator
 Located at: `C:\Users\steph\OneDrive\Desktop\Claude Code\Newsletter\ai-newsletter-curator`
 
@@ -48,12 +53,16 @@ daily-news-synthesizer/
 ├── src/
 │   ├── __init__.py
 │   ├── config.py                   # Configuration management
-│   ├── gmail_client.py             # Gmail API wrapper (adapted from existing)
+│   ├── gmail_client.py             # Gmail API wrapper (with attachment support)
 │   ├── newsletter_parser.py        # Story extraction logic
 │   ├── deduplicator.py             # Deduplication & synthesis
 │   ├── briefing_generator.py       # Creates formatted briefing
 │   ├── email_sender.py             # Sends briefing via Gmail
-│   └── main.py                     # Orchestrator
+│   ├── main.py                     # Orchestrator
+│   └── audio/                      # Phase 2: Audio generation
+│       ├── __init__.py
+│       ├── script_generator.py     # Convert stories to spoken script
+│       └── tts_client.py           # ElevenLabs TTS wrapper
 ├── templates/
 │   └── briefing_template.html      # Email HTML template
 ├── tests/
@@ -162,31 +171,31 @@ jobs:
 
 ---
 
-## Phase 2: Audio Podcast (Future)
+## Phase 2: Audio Podcast - COMPLETE
 
-### Additions to Project
+### Implementation
+- **TTS Provider:** ElevenLabs (Rachel voice)
+- **Content:** Top 5 stories + 10 secondary stories (~7 min podcast)
+- **Delivery:** MP3 attached to daily briefing email
+- **Cost:** ~$5-11/month depending on plan
+
+### Files Added
 ```
-src/
-├── audio/
-│   ├── tts_client.py           # Text-to-speech wrapper
-│   ├── podcast_script.py       # Convert briefing to script format
-│   └── audio_assembler.py      # Combine intro/stories/outro
+src/audio/
+├── __init__.py
+├── script_generator.py     # Converts stories to natural spoken script
+└── tts_client.py           # ElevenLabs API wrapper
 ```
 
-### TTS Recommendation: ElevenLabs
-- **Why:** Most natural-sounding, good podcast voices
-- **Cost:** ~$5/month for 30k characters (sufficient for daily briefing)
-- **Alternative:** OpenAI TTS ($15/1M chars) - cheaper but less natural
+### Podcast Structure (as implemented)
+1. **Intro:** "Good morning. Here's your AI news briefing for [date]..."
+2. **Quick Headlines:** Overview of top 5 stories
+3. **Top Stories:** Detailed coverage with "why it matters"
+4. **Secondary Stories:** Brief roundup of additional stories
+5. **Outro:** Sign-off with source attribution
 
-### Podcast Structure
-1. **Intro** (5 sec): "Good morning, here's your AI briefing for [date]"
-2. **Executive Summary** (30 sec): TL;DR bullets
-3. **Top Stories** (3-5 min): Detailed coverage
-4. **Outro** (5 sec): "That's your AI briefing. See you tomorrow."
-
-### Delivery
-- Attach MP3 to daily email
-- Or: Upload to cloud storage, include link in email
+### GitHub Secrets Required
+- `ELEVENLABS_API_KEY` - ElevenLabs API key for TTS
 
 ---
 
@@ -287,11 +296,12 @@ schedule:
 5. **Edge cases** - Test: missing newsletter, API timeout, empty day
 
 ### Success Criteria
-- [ ] Briefing email arrives by 8:15 AM PT on weekdays
-- [ ] All 5 newsletters processed (when available)
-- [ ] Stories properly deduplicated across sources
-- [ ] HTML email renders correctly in Gmail
-- [ ] Error notifications sent on failures
+- [x] Briefing email arrives by 8:15 AM PT on weekdays
+- [x] All 5 newsletters processed (when available)
+- [x] Stories properly deduplicated across sources
+- [x] HTML email renders correctly in Gmail
+- [x] Error notifications sent on failures
+- [x] Audio podcast generated and attached (Phase 2)
 
 ---
 
@@ -320,3 +330,7 @@ schedule:
 - **Email format:** Rich HTML with professional styling
 - **Story count:** All unique stories after deduplication (tiered by importance)
 - **Repository:** Use existing `stephbecksod/dailynews` repo
+- **Audio TTS:** ElevenLabs with Rachel voice (natural, professional)
+- **Audio content:** Top + secondary stories (~7 min), not "Also Noted" headlines
+- **Audio delivery:** MP3 attachment (simpler than streaming link)
+- **Gmail auth:** MCP server token reused, base64-encoded for GitHub Actions
