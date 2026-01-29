@@ -236,6 +236,30 @@ src/audio/
 - Cache common newsletter parsing
 - Consider shared deduplication across users
 
+### Key Challenge: User Email Access
+
+The biggest challenge for Phase 3 is how users connect their email to fetch newsletters. The current MCP token approach won't work for multi-user.
+
+#### The Gmail OAuth Problem
+- **Web OAuth flow** requires redirect URLs, server handling
+- **Google verification** required for 100+ users (4-6 week process)
+- **Sensitive scope restrictions** - `gmail.readonly` gets extra scrutiny
+- **Secure token storage** - must encrypt refresh tokens per user
+
+#### Options to Consider
+
+| Option | Approach | Pros | Cons |
+|--------|----------|------|------|
+| **1. Email Forwarding** | Users set up Gmail forwarding rules to central inbox | No OAuth needed, works immediately | Manual setup, trust issues |
+| **2. Dedicated Email per User** | Each user gets `user123@yourdomain.com`, subscribes newsletters there | Full control, no Gmail OAuth | Users must re-subscribe, email hosting costs ($15-50/mo) |
+| **3. RSS Feeds** | Fetch newsletter content via RSS instead of email | No email access needed | Not all newsletters have RSS |
+| **4. Full Gmail OAuth** | Go through Google's verification process | Best UX, professional | 4-6 week delay, compliance burden |
+| **5. Google Workspace Only** | Limit to business accounts (internal apps skip verification) | Launch immediately | Excludes personal Gmail users |
+
+#### Recommended Approach
+- **MVP:** Start with Option 2 (dedicated email) or Option 1 (forwarding) to validate product
+- **Long-term:** Apply for Google OAuth verification in parallel for native Gmail connection later
+
 ---
 
 ## Implementation Order
